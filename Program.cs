@@ -17,7 +17,7 @@ Console.WriteLine();
 var client = new UdpClient("pool.ntp.org", 123);
 var packet = new List<byte>
     {
-    0b_0001_1011
+    0b_0001_1011 //flags => Leap Indicator 0b_00 no warning leap indicator (0), 0b_xx011 ntp version 3 (3), 0b_xxxx_x011 mode = client (3)
 };
 var ts = DateTime.Now;
 var old = new DateTime(1900, 1, 1, 0, 0, 0);
