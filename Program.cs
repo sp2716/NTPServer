@@ -8,8 +8,6 @@ using System.Net;
 using System.Net.Sockets;
 using Newtonsoft.Json;
 
-
-
 Console.WriteLine();
 
 var client = new UdpClient("pool.ntp.org", 123);
