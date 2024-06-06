@@ -4,7 +4,7 @@ using MemoryPack;
 [MemoryPackable]
 public partial class NtpPacket
 {
-    public uint Header { get; set; } //LI/VN/Mode/Strat/Poll/Prec
+    public byte Header { get; set; } //LI/VN/Mode/Strat/Poll/Prec
     public uint RootDelay { get; set; }
     public uint RootDispersion { get; set; }
     public uint ReferenceId { get; set; }
