@@ -26,5 +26,7 @@ foreach (var bite in rec)
 }
 Console.WriteLine();
 var ntp = NtpPacket.Deserialize(rec);
+var dt = new DateTime(1900, 1, 1, 0, 0, 0).AddSeconds((ntp.ReferenceTimestamp & 0xFFFF0000));
+Console.WriteLine(dt.ToString());
 Console.WriteLine(JsonConvert.SerializeObject(ntp, Formatting.Indented));
 Console.ReadKey();
