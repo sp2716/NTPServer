@@ -51,9 +51,55 @@
             var ret = new List<byte>();
             ret.AddRange([0x1c, 0x01, 0x00, 0xe9]);
             ret.AddRange(new byte[7]);
-            ret.AddRange([0x42,0x47,0x50,0x53,0x00]);
+            ret.AddRange(GetNtp());
 
             return [..ret];
+        }
+        static DateTime NtpToDateTime(byte[] ntpTime)
+        {
+            decimal intpart = 0, fractpart = 0;
+
+            for (var i = 0; i <= 3; i++)
+                intpart = 256 * intpart + ntpTime[i];
+            for (var i = 4; i <= 7; i++)
+                fractpart = 256 * fractpart + ntpTime[i];
+
+            var milliseconds = intpart * 1000 + ((fractpart * 1000) / 0x100000000L);
+
+            Console.WriteLine("milliseconds: " + milliseconds);
+            Console.WriteLine("intpart:      " + intpart);
+            Console.WriteLine("fractpart:    " + fractpart);
+            var epoch = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return epoch.AddMilliseconds((double)milliseconds);
+        }
+        static byte[] GetNtp()
+        {
+            var epoch = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            var milliseconds = (decimal)(DateTime.Now - epoch).TotalMilliseconds;
+            decimal intpart = 0, fractpart = 0;
+            var ntpData = new byte[8];
+
+            intpart = milliseconds / 1000;
+            fractpart = ((milliseconds % 1000) * 0x100000000L) / 1000m;
+
+            Console.WriteLine("milliseconds: " + milliseconds);
+            Console.WriteLine("intpart:      " + intpart);
+            Console.WriteLine("fractpart:    " + fractpart);
+
+            var temp = intpart;
+            for (var i = 3; i >= 0; i--)
+            {
+                ntpData[i] = (byte)(temp % 256);
+                temp = temp / 256;
+            }
+
+            temp = fractpart;
+            for (var i = 7; i >= 4; i--)
+            {
+                ntpData[i] = (byte)(temp % 256);
+                temp = temp / 256;
+            }
+            return ntpData;
         }
     }
 }
