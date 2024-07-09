@@ -4,10 +4,18 @@
 //Console.ReadKey();
 //server.Stop();
 using NTPServer.Models;
+using NTPServer;
 using System.Net;
 using System.Net.Sockets;
 using Newtonsoft.Json;
+var server = new NtpServer();
+Console.WriteLine("creating ntp server instance");
+server.Start();
+Console.ReadLine();
+Console.WriteLine("ntp server stopping");
+server.Stop();
 
+/*
 Console.WriteLine();
 
 var client = new UdpClient("pool.ntp.org", 123);
@@ -89,3 +97,4 @@ static byte[] ConvertToNtp(decimal milliseconds)
     }
     return ntpData;
 }
+*/

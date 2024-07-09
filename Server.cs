@@ -6,34 +6,41 @@
     using System.Net.Sockets;
     public class NtpServer
     {
-        private volatile bool running = false;
+        CancellationTokenSource? cts = null;
         public NtpServer()
         {
             
         }
         public void Stop()
         {
-            running = false;
+            if(cts != null)
+            {
+                cts.Cancel();
+                cts = null;
+            }
         }
         public void Start()
         {
-            running = true;
-            new Thread(new ThreadStart(ListenerThread)).Start();
+            if(cts == null)
+            {
+                var cts = new CancellationTokenSource();
+                Task.Factory.StartNew(() => ListenerThread(cts.Token), cts.Token);
+            }
         }
-        private async void ListenerThread()
+        private async void ListenerThread(CancellationToken ct)
         {
+            ct.Register(() => { Console.WriteLine("Cancelling"); return; });
             Console.WriteLine("Starting NTP Server Listener thread on UDP Port 123");
             var server = new UdpClient(123);
             var ep = new IPEndPoint(0,0);   
-            while (running)
+            while (true)
             {
                 var dgram = server.Receive(ref ep);
                 //if something is received just hit pool.ntp.org and push the message back to the client...
-                
+                Console.WriteLine($"Received request from {ep.Address}:{ep.Port}. Replying...");
                 var send = Reply();
                 server.Send(send, send.Length);
             }
-            Console.WriteLine("Stopping NTP Server thread");
         }
         private byte[] GetTime(byte[] request)
         {
