@@ -1,9 +1,12 @@
 ﻿namespace NTPServer
 {
+    using NTPServer.Models;
     using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Sockets;
+    using System.Text;
+
     public class NtpServer
     {
         CancellationTokenSource? cts = null;
@@ -31,36 +34,34 @@
         {
             ct.Register(() => { Console.WriteLine("Cancelling"); return; });
             Console.WriteLine("Starting NTP Server Listener thread on UDP Port 123");
+            var ep = new IPEndPoint(0, 0);
             var server = new UdpClient(123);
-            var ep = new IPEndPoint(0,0);   
             while (true)
             {
                 var dgram = server.Receive(ref ep);
                 //if something is received just hit pool.ntp.org and push the message back to the client...
-                Console.WriteLine($"Received request from {ep.Address}:{ep.Port}. Replying...");
-                var send = Reply();
-                server.Send(send, send.Length);
+                Console.WriteLine($"Received {dgram.Length} bytes as request {BitConverter.ToString(dgram)} from {ep.Address}:{ep.Port}. Replying...");
+                var send = Reply(dgram);
+                server.Send(send, send.Length, ep);
             }
         }
-        private byte[] GetTime(byte[] request)
+        private static byte[] Reply(byte[] rec)
         {
-            var ret = new List<byte>();
-            using (var client = new UdpClient("pool.ntp.org", 123))
+            var recNtp = NtpV3Packet.Deserialize(rec) ?? new NtpV3Packet(); 
+            var bytes = GetNtp();
+            Console.WriteLine(BitConverter.ToString(bytes));
+            ulong time = BitConverter.ToUInt64(bytes);
+            var ntppacket = new NtpV4Packet
             {
-                var rec = client.Send(request);
-                //client.Receive()
-                //return 
-            }
-            return [.. ret];
-        }
-        private static byte[] Reply()
-        {
-            var ret = new List<byte>();
-            ret.AddRange([0x1c, 0x01, 0x00, 0xe9]);
-            ret.AddRange(new byte[7]);
-            ret.AddRange(GetNtp());
-
-            return [..ret];
+                Header = 0xe4,
+                ReferenceId = 0,
+                ReferenceTimestamp = time,
+                OriginTimestamp = recNtp.TxTimestamp,
+                RxTimestamp = time,
+                TxTimestamp = time,
+            };
+            ntppacket.ReferenceId = BitConverter.ToUInt32(Encoding.ASCII.GetBytes("NIST"));
+            return ntppacket.ToBytes();
         }
         static DateTime NtpToDateTime(byte[] ntpTime)
         {
