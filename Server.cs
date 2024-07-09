@@ -2,7 +2,6 @@
 {
     using NTPServer.Models;
     using System;
-    using System.Collections.Generic;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
@@ -53,14 +52,14 @@
             ulong time = BitConverter.ToUInt64(bytes);
             var ntppacket = new NtpV4Packet
             {
-                Header = 0xe4,
-                ReferenceId = 0,
+                Header = 0xa4,
+                ReferenceId = BitConverter.ToUInt32(Encoding.ASCII.GetBytes("NIST")),
                 ReferenceTimestamp = time,
                 OriginTimestamp = recNtp.TxTimestamp,
                 RxTimestamp = time,
-                TxTimestamp = time,
+                TxTimestamp = time + 100, //fool a delay
             };
-            ntppacket.ReferenceId = BitConverter.ToUInt32(Encoding.ASCII.GetBytes("NIST"));
+            //Calculate root dispersion, 
             return ntppacket.ToBytes();
         }
         static DateTime NtpToDateTime(byte[] ntpTime)
