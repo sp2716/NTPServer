@@ -52,7 +52,8 @@
             var rx = GetNtp(rxTime);
             var ntppacket = new NtpV3Packet
             {
-                Header = 0b_0001_1100, //0x1C = LI => 0 no warning, Version 3, Mode = server (4)  0b_
+                Header = 0x1c,//0b_0011_1000, //0x1C = LI => 0 no warning, Version 3, Mode = server (4)  0b_
+                Stratum = 2,
                 ReferenceId = BitConverter.ToUInt32(Encoding.ASCII.GetBytes("NIST")),
                 ReferenceTimestamp = txTime,
                 OriginTimestamp = recNtp.TxTimestamp,

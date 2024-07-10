@@ -27,7 +27,7 @@ public partial class NtpV3Packet
     }
     public byte[] ToBytes()
     {
-        return MemoryPackSerializer.Serialize(this);
+        return MemoryPackSerializer.Serialize(this).Skip(1).ToArray();
     }
 }
 
