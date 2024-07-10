@@ -38,7 +38,7 @@
             while (true)
             {
                 var dgram = server.Receive(ref ep);
-                var rxTime = DateTime.Now;
+                var rxTime = DateTime.UtcNow;
                 //if something is received just hit pool.ntp.org and push the message back to the client...
                 Console.WriteLine($"Received {dgram.Length} bytes as request {BitConverter.ToString(dgram)} from {ep.Address}:{ep.Port}. Replying...");
                 var send = Reply(dgram, rxTime);
@@ -48,7 +48,7 @@
         private static byte[] Reply(byte[] rec, DateTime rxTime)
         {
             var recNtp = NtpV3Packet.Deserialize(rec) ?? new NtpV3Packet();
-            var txTime = GetNtp(DateTime.Now);
+            var txTime = GetNtp(DateTime.UtcNow);
             var rx = GetNtp(rxTime);
             var ntppacket = new NtpV3Packet
             {
