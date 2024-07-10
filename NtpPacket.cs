@@ -25,6 +25,10 @@ public partial class NtpV3Packet
         ret.AddRange(bytes);
         return MemoryPackSerializer.Deserialize<NtpV3Packet>(ret.ToArray());
     }
+    public byte[] ToBytes()
+    {
+        return MemoryPackSerializer.Serialize(this);
+    }
 }
 
 [MemoryPackable]

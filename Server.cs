@@ -38,26 +38,26 @@
             while (true)
             {
                 var dgram = server.Receive(ref ep);
+                var rxTime = DateTime.Now;
                 //if something is received just hit pool.ntp.org and push the message back to the client...
                 Console.WriteLine($"Received {dgram.Length} bytes as request {BitConverter.ToString(dgram)} from {ep.Address}:{ep.Port}. Replying...");
-                var send = Reply(dgram);
+                var send = Reply(dgram, rxTime);
                 server.Send(send, send.Length, ep);
             }
         }
-        private static byte[] Reply(byte[] rec)
+        private static byte[] Reply(byte[] rec, DateTime rxTime)
         {
-            var recNtp = NtpV3Packet.Deserialize(rec) ?? new NtpV3Packet(); 
-            var bytes = GetNtp();
-            Console.WriteLine(BitConverter.ToString(bytes));
-            ulong time = BitConverter.ToUInt64(bytes);
-            var ntppacket = new NtpV4Packet
+            var recNtp = NtpV3Packet.Deserialize(rec) ?? new NtpV3Packet();
+            var txTime = GetNtp(DateTime.Now);
+            var rx = GetNtp(rxTime);
+            var ntppacket = new NtpV3Packet
             {
-                Header = 0xa4,
+                Header = 0b_0001_1100, //0x1C = LI => 0 no warning, Version 3, Mode = server (4)  0b_
                 ReferenceId = BitConverter.ToUInt32(Encoding.ASCII.GetBytes("NIST")),
-                ReferenceTimestamp = time,
+                ReferenceTimestamp = txTime,
                 OriginTimestamp = recNtp.TxTimestamp,
-                RxTimestamp = time,
-                TxTimestamp = time + 100, //fool a delay
+                RxTimestamp = rx,
+                TxTimestamp = txTime, //fool a delay
             };
             //Calculate root dispersion, 
             return ntppacket.ToBytes();
@@ -79,10 +79,10 @@
             var epoch = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             return epoch.AddMilliseconds((double)milliseconds);
         }
-        static byte[] GetNtp()
+        static ulong GetNtp(DateTime dt)
         {
             var epoch = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            var milliseconds = (decimal)(DateTime.Now - epoch).TotalMilliseconds;
+            var milliseconds = (decimal)(dt - epoch).TotalMilliseconds;
             decimal intpart = 0, fractpart = 0;
             var ntpData = new byte[8];
 
@@ -106,7 +106,8 @@
                 ntpData[i] = (byte)(temp % 256);
                 temp = temp / 256;
             }
-            return ntpData;
+            ulong result = BitConverter.ToUInt64(ntpData);
+            return result;
         }
     }
 }
