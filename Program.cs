@@ -3,11 +3,7 @@
 //server.Start();
 //Console.ReadKey();
 //server.Stop();
-using NTPServer.Models;
 using NTPServer;
-using System.Net;
-using System.Net.Sockets;
-using Newtonsoft.Json;
 var server = new NtpServer();
 Console.WriteLine("creating ntp server instance");
 server.Start();
