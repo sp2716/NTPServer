@@ -74,9 +74,6 @@
 
             var milliseconds = intpart * 1000 + ((fractpart * 1000) / 0x100000000L);
 
-            Console.WriteLine("milliseconds: " + milliseconds);
-            Console.WriteLine("intpart:      " + intpart);
-            Console.WriteLine("fractpart:    " + fractpart);
             var epoch = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             return epoch.AddMilliseconds((double)milliseconds);
         }
@@ -90,10 +87,7 @@
             intpart = milliseconds / 1000;
             fractpart = ((milliseconds % 1000) * 0x100000000L) / 1000m;
 
-            Console.WriteLine("milliseconds: " + milliseconds);
-            Console.WriteLine("intpart:      " + intpart);
-            Console.WriteLine("fractpart:    " + fractpart);
-
+           
             var temp = intpart;
             for (var i = 3; i >= 0; i--)
             {
